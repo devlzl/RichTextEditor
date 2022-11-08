@@ -1,0 +1,37 @@
+diff --git a/node_modules/prosemirror-markdown/dist/index.js b/node_modules/prosemirror-markdown/dist/index.js
+index df40be2..3bc3041 100644
+--- a/node_modules/prosemirror-markdown/dist/index.js
++++ b/node_modules/prosemirror-markdown/dist/index.js
+@@ -454,6 +454,22 @@ const defaultMarkdownSerializer = new MarkdownSerializer({
+     },
+     text(state, node) {
+         state.text(node.text, !state.inAutolink);
++    },
++    audio(state, node) {
++        state.write(`<audio src="${node.attrs.src}" controls></audio>`)
++        state.closeBlock(node)
++    },
++    video(state, node) {
++        state.write(`<video src="${node.attrs.src}" controls></video>`)
++        state.closeBlock(node)
++    },
++    uploading(state, node) {
++        state.write(`<uploading></uploading>`)
++        state.closeBlock(node)
++    },
++    reupload(state, node) {
++        state.write(`<reupload></reupload>`)
++        state.closeBlock(node)
+     }
+ }, {
+     em: { open: "*", close: "*", mixable: true, expelEnclosingWhitespace: true },
+@@ -473,7 +489,8 @@ const defaultMarkdownSerializer = new MarkdownSerializer({
+     },
+     code: { open(_state, _mark, parent, index) { return backticksFor(parent.child(index), -1); },
+         close(_state, _mark, parent, index) { return backticksFor(parent.child(index - 1), 1); },
+-        escape: false }
++        escape: false },
++    del: { open: "~~", close: "~~", mixable: true, expelEnclosingWhitespace: true }
+ });
+ function backticksFor(node, side) {
+     let ticks = /`+/g, m, len = 0;
