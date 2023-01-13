@@ -98,6 +98,7 @@ onMounted(async () => {
     }
 
     .operate-item {
+        width: 30px;
         cursor: pointer;
         border-radius: 2px;
     }
@@ -120,9 +121,11 @@ onMounted(async () => {
         z-index: 1;
         transition: opacity 0.3s, top 0.3s;
         .plus {
+            width: 20px;
             cursor: pointer;
         }
         .operates {
+            display: flex;
             position: absolute;
             left: 0;
             top: 30px;

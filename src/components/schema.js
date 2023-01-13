@@ -174,6 +174,7 @@ const uploadingNodeSpec = {
                 {
                     src: loadingIcon,
                     style: `
+                        width: 20px;
                         position: relative;
                         animation: rotate 1s linear infinite;
                     `
@@ -264,6 +265,7 @@ const reuploadNodeSpec = {
                     class: 'reupload',
                     src: reuploadIcon,
                     style: `
+                        width: 20px;
                         cursor: pointer;
                     `,
                 }
