@@ -27,36 +27,51 @@ function createFileInput(view) {
         let fileName = file.name
         let fileSize = formattedFileSize(file.size)
         if (fileType === 'image') {
-            let reader = new FileReader()
-            reader.readAsDataURL(file)
-            reader.onload = () => {
-                let nodeType = schema.nodes.image
-                let imgNode = nodeType.create({ src: reader.result })
-                view.dispatch(view.state.tr.replaceSelectionWith(imgNode))
-                update.emit()
-                view.focus()
+            let previewUrl = URL.createObjectURL(file)
+            let uploadingImageNode = schema.nodes.uploadingImage.create({ previewUrl })
+            view.dispatch(view.state.tr.replaceSelectionWith(uploadingImageNode))
+            let from = view.state.selection.from
+
+            async function upload() {
+                let uploadingImage = document.querySelector('uploading-image')
+                let result = await uploadFile(file)
+                if (result.ok) {
+                    let { height } = uploadingImage.getBoundingClientRect()
+                    let node = schema.nodes.image.create({ src: result.data, backgroundImage: previewUrl, height: height })
+                    view.dispatch(view.state.tr.replaceWith(from - 1, from, node))
+                    update.emit()
+                    view.focus()
+                } else {
+                    let node = schema.nodes.reuploadImage.create({ previewUrl })
+                    view.dispatch(view.state.tr.replaceWith(from - 1, from, node))
+                    update.emit()
+                    view.focus()
+                    document.querySelector('.reupload-image').addEventListener('click', () => {
+                        view.dispatch(view.state.tr.replaceWith(from - 1, from, uploadingImageNode))
+                        upload()
+                    })
+                }
             }
+            await upload()
         } else if (fileType === 'audio' || fileType === 'video') {
-            let uploadingNode = schema.nodes.uploading.create({ fileType, fileName, fileSize })
-            view.dispatch(view.state.tr.replaceSelectionWith(uploadingNode))
+            let uploadingFileNode = schema.nodes.uploadingFile.create({ fileType, fileName, fileSize })
+            view.dispatch(view.state.tr.replaceSelectionWith(uploadingFileNode))
             let from = view.state.selection.from
 
             async function upload() {
                 let result = await uploadFile(file)
                 if (result.ok) {
-                    let nodeType = schema.nodes[fileType]
-                    let node = nodeType.create({ src: result.data })
-                    view.dispatch(view.state.tr.replaceWith(from - 1, from, node))
-                    update.emit()
-                    view.focus()    
-                } else {
-                    let nodeType = schema.nodes.reupload
-                    let node = nodeType.create({ fileType, fileName, fileSize })
+                    let node = schema.nodes[fileType].create({ src: result.data })
                     view.dispatch(view.state.tr.replaceWith(from - 1, from, node))
                     update.emit()
                     view.focus()
-                    document.querySelector('.reupload').addEventListener('click', () => {
-                        view.dispatch(view.state.tr.replaceWith(from - 1, from, uploadingNode))
+                } else {
+                    let node = schema.nodes.reuploadFile.create({ fileType, fileName, fileSize })
+                    view.dispatch(view.state.tr.replaceWith(from - 1, from, node))
+                    update.emit()
+                    view.focus()
+                    document.querySelector('.reupload-file').addEventListener('click', () => {
+                        view.dispatch(view.state.tr.replaceWith(from - 1, from, uploadingFileNode))
                         upload()
                     })
                 }

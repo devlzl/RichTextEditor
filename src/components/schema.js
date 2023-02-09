@@ -2,15 +2,23 @@ import { Schema } from 'prosemirror-model'
 import { schema as basicSchema } from 'prosemirror-schema-basic'
 import audioFileIcon from '../assets/block/audioFile.png'
 import videoFileIcon from '../assets/block/videoFile.png'
-import loadingIcon from '../assets/block/loading.png'
-import reuploadIcon from '../assets/block/reupload.png'
+import uploadingImageIcon from '../assets/block/uploading-image.png'
+import reuploadImageIcon from '../assets/block/reupload-image.png'
+import uploadingFileIcon from '../assets/block/uploading-file.png'
+import reuploadFileIcon from '../assets/block/reupload-file.png'
 
 
 const imageNodeSpec = {
     attrs: {
         src: {
             default: ''
-        }
+        },
+        backgroundImage: {
+            default: ''
+        },
+        height: {
+            default: 0
+        },
     },
     inline: true,
     group: 'inline',
@@ -19,7 +27,14 @@ const imageNodeSpec = {
             'img',
             {
                 src: node.attrs.src,
-                style: 'display: block; width: 700px; margin: 20px auto;'
+                style: `
+                    display: block;
+                    width: 700px;
+                    margin: 20px auto;
+                    height: ${node.attrs.height}px;
+                    background-image: url(${node.attrs.backgroundImage});
+                    background-size: cover;
+                `
             }
         ]
     },
@@ -92,7 +107,148 @@ const videoNodeSpec = {
 }
 
 
-const uploadingNodeSpec = {
+const uploadingImageNodeSpec = {
+    attrs: {
+        previewUrl: {
+            default: ''
+        },
+    },
+    inline: true,
+    group: 'inline',
+    toDOM: (node) => {
+        return [
+            'uploading-image',
+            {
+                style: `
+                    display: flex;
+                    position: relative;
+                    width: 700px;
+                    margin: 20px auto;
+                `,
+            },
+            [
+                'style',
+                {},
+                `
+                    @keyframes rotate {
+                        from { transform: rotate(360deg); }
+                        to { transform: rotate(0deg); }
+                    }
+                `
+            ],
+            [
+                'img',
+                {
+                    src: node.attrs.previewUrl,
+                    style: `
+                        width: 100%;
+                    `
+                }
+            ],
+            [
+                'div',
+                {
+                    style: `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(53, 53, 53, 0.7);
+                    `
+                }
+            ],
+            [
+                'img',
+                {
+                    src: uploadingImageIcon,
+                    style: `
+                        position: absolute;
+                        width: 24px;
+                        right: 32px;
+                        bottom: 22px;
+                        animation: rotate 1s linear infinite;
+                    `
+                }
+            ]
+        ]
+    },
+    parseDOM: [{
+        tag: 'uploading-image',
+        getAttrs(dom) {
+            return {}
+        }
+    }]
+}
+
+
+const reuploadImageNodeSpec = {
+    attrs: {
+        previewUrl: {
+            default: ''
+        },
+    },
+    inline: true,
+    group: 'inline',
+    toDOM: (node) => {
+        return [
+            'reupload-image',
+            {
+                style: `
+                    display: flex;
+                    position: relative;
+                    width: 700px;
+                    margin: 20px auto;
+                `,
+            },
+            [
+                'img',
+                {
+                    src: node.attrs.previewUrl,
+                    style: `
+                        width: 100%;
+                    `
+                }
+            ],
+            [
+                'div',
+                {
+                    style: `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(53, 53, 53, 0.7);
+                    `
+                }
+            ],
+            [
+                'img',
+                {
+                    class: 'reupload-image',
+                    src: reuploadImageIcon,
+                    style: `
+                        position: absolute;
+                        width: 24px;
+                        right: 32px;
+                        bottom: 22px;
+                        cursor: pointer;
+                    `
+                }
+            ]
+        ]
+    },
+    parseDOM: [{
+        tag: 'reupload-image',
+        getAttrs(dom) {
+            return {}
+        }
+    }]
+}
+
+
+const uploadingFileNodeSpec = {
     attrs: {
         fileType: {
             default: ''
@@ -108,7 +264,7 @@ const uploadingNodeSpec = {
     group: 'inline',
     toDOM: (node) => {
         return [
-            'uploading',
+            'uploading-file',
             {
                 style: `
                     display: flex;
@@ -172,7 +328,7 @@ const uploadingNodeSpec = {
             [
                 'img',
                 {
-                    src: loadingIcon,
+                    src: uploadingFileIcon,
                     style: `
                         width: 20px;
                         position: relative;
@@ -183,7 +339,7 @@ const uploadingNodeSpec = {
         ]
     },
     parseDOM: [{
-        tag: 'uploading',
+        tag: 'uploading-file',
         getAttrs(dom) {
             return {}
         }
@@ -191,7 +347,7 @@ const uploadingNodeSpec = {
 }
 
 
-const reuploadNodeSpec = {
+const reuploadFileNodeSpec = {
     attrs: {
         fileName: {
             default: ''
@@ -204,7 +360,7 @@ const reuploadNodeSpec = {
     group: 'inline',
     toDOM: (node) => {
         return [
-            'reupload',
+            'reupload-file',
             {
                 style: `
                     display: flex;
@@ -262,8 +418,8 @@ const reuploadNodeSpec = {
             [
                 'img',
                 {
-                    class: 'reupload',
-                    src: reuploadIcon,
+                    class: 'reupload-file',
+                    src: reuploadFileIcon,
                     style: `
                         width: 20px;
                         cursor: pointer;
@@ -273,7 +429,7 @@ const reuploadNodeSpec = {
         ]
     },
     parseDOM: [{
-        tag: 'reupload',
+        tag: 'reupload-file',
         getAttrs(dom) {
             return {}
         }
@@ -297,7 +453,9 @@ export const schema = new Schema({
             .addBefore('', 'image', imageNodeSpec)
             .addBefore('', 'audio', audioNodeSpec)
             .addBefore('', 'video', videoNodeSpec)
-            .addBefore('', 'uploading', uploadingNodeSpec)
-            .addBefore('', 'reupload', reuploadNodeSpec),
+            .addBefore('', 'uploadingImage', uploadingImageNodeSpec)
+            .addBefore('', 'reuploadImage', reuploadImageNodeSpec)
+            .addBefore('', 'uploadingFile', uploadingFileNodeSpec)
+            .addBefore('', 'reuploadFile', reuploadFileNodeSpec),
     marks: basicSchema.spec.marks.addBefore('', 'del', delMarkSpec)
 })
